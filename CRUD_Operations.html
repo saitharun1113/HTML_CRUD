@@ -1,0 +1,238 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Crud Operation</title>
+    <script src="scripts/jquery-3.5.1.js"></script>
+    <script type="text/javascript">
+        var complete_data;
+        var index;
+        $(document).ready(function () {
+            $('#divChld').hide();
+            $('#addDiv').hide();
+            $('#btnDlt').hide();
+            $('#SubUpdDiv').hide();
+        });
+
+
+        function FnGet() {
+            $('#btnGet').show();
+            $('#divChld').show();
+            $('#addDiv').show();
+            $.ajax({
+                url: "https://jsonplaceholder.typicode.com/posts",
+                method: 'get',
+                dataType: 'json',
+                success: function (data) {
+                    BindaDataToGrid(data);
+                },
+                error: function (jqHX, textStatus, errorThrow) {
+                    return false;
+                }
+            });
+            $('#btnDlt').show();
+        }
+
+        function BindaDataToGrid(_data) {
+            var bndData = "<table id='tblUserData' border='1' cellpadding='5px' style='background-color:aquamarine'><tr><th><input type='checkbox' id='hdrChkBx' onclick='FnChkBx()' /></th><th>ID</th><th>User Id</th><th>Title</th><th>Body</th></tr>";
+            if (0 < _data.length) {
+                for (i = 0; i < _data.length; i++) {
+                    bndData += "<tr><td><input type='checkbox' id='chk" + _data[i]['id'] + "' onclick='FnChkBxId(" + _data[i]['id'] + ")' /></td><td>" + _data[i]['id'] + "</td><td>" + _data[i]['userId'] + "</td><td>" + _data[i]['title'] + "</td><td>" + _data[i]['body'] + "</td></tr>";
+                }
+            }
+            bndData += "</table>";
+            complete_data = bndData;
+            $('#tblGrd').html(bndData);
+        }
+        function FnChkBx() {
+            $("#hdrChkBx").click(function () {
+                $("input[type=checkbox]").prop('checked', $(this).prop('checked'));
+
+            });
+        }
+        function FnChkBxId(id) {
+            debugger;
+            if ($("#chk" + id).prop('checked') == true) {
+                $('#btnEDIT').prop('disabled', false);
+                index = id;
+            }
+            else {
+                $('#btnEDIT').prop('disabled', true);
+            }
+
+        }
+
+        function FnAddData() {
+            $('#divChld').hide();
+            $('#addDiv').show();
+            $('#btnDlt').hide();
+            $('#SubUpdDiv').show();
+            $('#updDiv').hide();
+            $('#btnGet').show();
+        }
+
+        function FnSubmit() {
+            if ($('#txtUsId').val() != "") {
+                var UsId = $('#txtUsId').val();
+            }
+            else { alert('Please Enter User ID...'); return false; }
+
+            if ($('#txtTitle').val() != "") {
+                var title = $('#txtTitle').val();
+            }
+            else { alert('Please Enter Title Details...'); return false; }
+
+            if ($('#txtBody').val() != "") {
+                var body = $('#txtBody').val();
+            }
+            else { alert('Please Enter Body Details...'); return false; }
+
+            $.ajax({
+                type: "POST",
+                url: "https://jsonplaceholder.typicode.com/posts",
+                data: "{userId:" + UsId + ",'title':'" + title + "','body':'" + body + "'}",
+                contentType: "application/json; charset=UTF-8",
+                dataType: "JSON",
+                error: function (jqHX, textStatus, errorThrow) {
+                    return false;
+                },
+                success: function (resp) {
+                    if (resp > 0) {
+                        alert('Data Inserted Successfully...');
+                    }
+                    else { alert('Data Insertion problem in DB...'); }
+                }
+            })
+        }
+
+        function FnEditData(index) {
+            debugger;
+            i = index;
+            complete_data;
+            var userId = $(this).closest('tr').find(_data[i]["userId"]);
+            var title = $(this).closest('tr').find(_data[i]['title']).val();
+            var body = $(this).closest('tr').find(_data[i]['body']).val();
+
+            $('#updDiv').show();
+            $('#addDiv').hide();
+
+            $('#txtUsIdU').val(userId);
+            $('#txtTitleU').val(title);
+            $('#txtBodyU').val(body);
+
+            $.ajax({
+                type: "PUT",
+                url: "https://jsonplaceholder.typicode.com/posts",
+                data: "{userId:" + UsId + ",'title':'" + title + "','body':'" + body + "'}",
+                contentType: "application/json; charset=UTF-8",
+                dataType: "JSON",
+                error: function (jqHX, textStatus, errorThrow) {
+                    return false;
+                },
+                success: function (resp) {
+                    if (resp > 0) {
+                        alert('Data Inserted Successfully...');
+                    }
+                    else { alert('Data Insertion problem in DB...'); }
+                }
+            })
+        }
+
+        function FnDelete() {
+
+            if (confirm("Are You sure You want to delete selected Items?")) {
+                alert("You pressed OK!");
+
+                var tblUserData = document.getElementById("tblUserData");
+                var chks = tblUserData.getElementsByTagName("INPUT");
+                if ($('input:checkbox:not(":checked")').length > 0) {
+                    for (var i = 0; i < chks.length; i++) {
+                        if (chks[i].checked) {
+                            $.ajax({
+                                type: "DELETE",
+                                url: "https://jsonplaceholder.typicode.com/posts",
+                                data: "{id:" + id + "'}",
+                                contentType: "application/json; charset=UTF-8",
+                                dataType: "JSON",
+                                error: function (jqHX, textStatus, errorThrow) {
+                                    return false;
+                                },
+                                success: function (resp) {
+                                    if (resp > 0) {
+                                        alert('Data Deleted Successfully...');
+                                    }
+                                    else { alert('Data Deletion problem in DB...'); }
+                                }
+                            })
+                        }
+                    }
+                }
+            }
+            else {
+                alert("Canceled Deletion!");
+                return false;
+            }
+        }
+
+
+    </script>
+    <meta charset="utf-8" />
+</head>
+<body style="font-family:Arial">
+    <div class="main">
+        <div>
+            <div class="GetMain" id="getBtn">
+                <input type="button" id="btnGet" value="GET" onclick="FnGet()" style="border-style:solid; border-radius:30px; background-color:#76ff76" />
+            </div>
+
+            <div class="ChldDiv" id="divChld" align="right">
+                <input type="button" value="EDIT" id="btnEDIT" disabled="disabled" style="border-style:solid;border-radius:30px;background-color:cadetblue" onclick="FnEditData()" />
+                <input type="button" value="ADD" id="btnADD" style="border-style:solid;border-radius:30px;background-color:darkorchid" onclick="FnAddData()" />
+                <div id="tblGrd">
+                </div>
+            </div>
+            <br />
+            <input type="button" id="btnDlt" value="DELETE USER" onclick="FnDelete()" style="border-radius:30px; background-color:crimson" />
+            <div class="SubmitUpdate" id="SubUpdDiv">
+                <div class="addDiv" id="addDiv">
+                    <table style="background-color:gray">
+                        <tr>
+                            <th>User id : </th>
+                            <td><input type="text" id="txtUsId" /></td>
+                        </tr>
+                        <tr>
+                            <th>Title : </th>
+                            <td><input type="text" id="txtTitle" /></td>
+                        </tr>
+                        <tr>
+                            <th>Body : </th>
+                            <td><input type="text" id="txtBody" /></td>
+                        </tr>
+                        <tr>
+                            <td colspan="2" align="center"><input type="button" id="btnSubmit" value="SUBMIT" style="background-color:aqua; border-radius:25px" onclick="FnSubmit()" /></td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="updDiv" id="updDiv">
+                    <table style="background-color:darkgreen">
+                        <tr>
+                            <th>User id : </th>
+                            <td><input type="text" id="txtUsIdU" /></td>
+                        </tr>
+                        <tr>
+                            <th>Title : </th>
+                            <td><input type="text" id="txtTitleU" /></td>
+                        </tr>
+                        <tr>
+                            <th>Body : </th>
+                            <td><input type="text" id="txtBodyU" /></td>
+                        </tr>
+                        <tr>
+                            <td colspan="2" align="center"><input type="button" id="btnSubmit" value="UPDATE" style="background-color:aqua; border-radius:25px" onclick="FnUPDATE()" /></td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
